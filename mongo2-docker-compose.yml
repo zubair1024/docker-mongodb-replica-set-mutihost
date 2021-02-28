@@ -1,0 +1,30 @@
+version: "3.8"
+
+services:
+  mongo2:
+    image: mongo:4.4-bionic
+    container_name: mongo2
+    command: ["--replSet", "my-replica-set", "--bind_ip_all", "--port", "30002"]
+    # use the below commands if you want to change the wiredTigerCacheSizeGB
+    # command:
+    #   [
+    #     "--replSet",
+    #     "my-replica-set",
+    #     "--bind_ip_all",
+    #     "--port",
+    #     "30002",
+    #     "--wiredTigerCacheSizeGB",
+    #     "${CACHE_SIZE}",
+    #   ]
+    environment:
+      - "MONGO_INITDB_ROOT_USERNAME:${MONGO_INITDB_ROOT_USERNAME}"
+      - "MONGO_INITDB_ROOT_PASSWORD:${MONGO_INITDB_ROOT_PASSWORD}"
+      - "MONGO_INITDB_DATABASE:${MONGO_INITDB_DATABASE}"
+    extra_hosts:
+      - "mongo1:${MONGO1_ADDR}"
+      - "mongo2:${MONGO2_ADDR}"
+      - "mongo3:${MONGO3_ADDR}"
+    volumes:
+      - ./data/mongo-2:/data/db
+    ports:
+      - 30002:30002

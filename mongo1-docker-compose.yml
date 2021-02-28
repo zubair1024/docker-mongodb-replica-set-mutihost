@@ -1,0 +1,34 @@
+version: "3.8"
+
+services:
+  mongo1:
+    image: mongo:4.4-bionic
+    container_name: mongo1
+    command: ["--replSet", "my-replica-set", "--bind_ip_all", "--port", "30001"]
+    # use the below commands if you want to change the wiredTigerCacheSizeGB
+    # command:
+    #   [
+    #     "--replSet",
+    #     "my-replica-set",
+    #     "--bind_ip_all",
+    #     "--port",
+    #     "30001",
+    #     "--wiredTigerCacheSizeGB",
+    #     "${CACHE_SIZE}",
+    #   ]
+    environment:
+      - "MONGO_INITDB_ROOT_USERNAME:${MONGO_INITDB_ROOT_USERNAME}"
+      - "MONGO_INITDB_ROOT_PASSWORD:${MONGO_INITDB_ROOT_PASSWORD}"
+      - "MONGO_INITDB_DATABASE:${MONGO_INITDB_DATABASE}"
+    extra_hosts:
+      - "mongo1:${MONGO1_ADDR}"
+      - "mongo2:${MONGO2_ADDR}"
+      - "mongo3:${MONGO3_ADDR}"
+    volumes:
+      - ./data/mongo-1:/data/db
+    ports:
+      - 30001:30001
+    healthcheck:
+      test: test $$(echo "rs.initiate({_id:'my-replica-set',members:[{_id:0,host:\"mongo1:30001\"},{_id:1,host:\"mongo2:30002\"},{_id:2,host:\"mongo3:30003\"}]}).ok || rs.status().ok" | mongo --port 30001 --quiet) -eq 1
+      interval: 10s
+      start_period: 30s
